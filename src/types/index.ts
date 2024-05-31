@@ -1,0 +1,6 @@
+const HARVESTER: HARVESTER_TYPE = "harvester";
+const UPDATER: UPDATER_TYPE = "updater";
+const BUILDER: BUILDER_TYPE = "builder";
+const SUPER_HARVESTER: SUPER_HARVESTER_TYPE = "superHarvester";
+
+export { HARVESTER, UPDATER, BUILDER, SUPER_HARVESTER };
