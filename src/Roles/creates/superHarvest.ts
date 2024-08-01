@@ -10,10 +10,11 @@ type SuperHarvesterOptions = {
 };
 function createSuperHarvesterByNum(options: SuperHarvesterOptions) {
   const { creepConfig = [WORK, CARRY, MOVE], sourceId, containerId, containerNum = 1 } = options;
+  const creepList = Object.keys(Game.creeps);
   if (
-    Object.keys(Game.creeps).filter(creepName => {
+    creepList.filter(creepName => {
       return (Game.creeps[creepName] as ExtendCreep).memory.configName?.includes(SUPER_HARVESTER);
-    }).length <= containerNum
+    }).length < containerNum
   ) {
     createSuperHarvester(creepConfig, sourceId, containerId);
   }
@@ -24,15 +25,23 @@ function createSuperHarvester(
   sourceId: Id<Source>,
   containerId: Id<StructureContainer>
 ) {
-  const workerName = SUPER_HARVESTER + Game.time;
-  Game.spawns["Spawn1"].spawnCreep(creepConfig, workerName, {
+  const creepName = SUPER_HARVESTER + Game.time + Math.floor(Math.random() * 1000);
+  Game.spawns["Spawn1"].spawnCreep(creepConfig, creepName, {
     memory: {
-      configName: workerName,
-      ready: true,
-      working: true
+      configName: creepName,
+      ready: false,
+      working: false
     }
   });
-  CreepsApi.add(workerName, SUPER_HARVESTER, { sourceId, containerId });
+  if (Memory.containerForSuperHarvest) {
+    const containerForSuperHarvest = Memory.containerForSuperHarvest.find(z => z.containerId === containerId);
+    if (containerForSuperHarvest) {
+      containerForSuperHarvest.creepName = creepName;
+    } else {
+      Memory.containerForSuperHarvest.push({ containerId, creepName });
+    }
+  }
+  CreepsApi.add(creepName, SUPER_HARVESTER, { sourceId, containerId });
 }
 
 export { createSuperHarvesterByNum };

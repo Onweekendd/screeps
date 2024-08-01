@@ -11,13 +11,13 @@ export const superHarvestWokingFlow: WorkingFlow = (arg: UpdateArgs) => {
       const container = Game.getObjectById(containerId);
       if (!container) {
         console.log(`Container ${containerId} not found`);
-        return true;
+        return false;
       }
-      if (!creep.pos.isNearTo(container)) {
+      if (!creep.pos.isEqualTo(container.pos)) {
         creep.moveTo(container, { visualizePathStyle: { stroke: "#ffaa00" } });
-        return true;
+        return false;
       }
-      return false;
+      return true;
     },
     target: (creep: Creep) => {
       return true;
@@ -26,17 +26,19 @@ export const superHarvestWokingFlow: WorkingFlow = (arg: UpdateArgs) => {
       const source = Game.getObjectById(sourceId);
       const container = Game.getObjectById(containerId);
       if (!source) {
-        console.log(`Source ${sourceId} not found`);
         return true;
       }
       if (!container) {
-        console.log(`Container ${containerId} not found`);
         return true;
       }
-      if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
+      if (!creep.pos.isEqualTo(container.pos)) {
         creep.moveTo(container, { visualizePathStyle: { stroke: "#ffaa00" } });
-        console.log(`creep ${creep.name} harvest ${source.id} not in range`);
+      } else {
+        if (container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+          creep.harvest(source);
+        }
       }
+
       return false;
     }
   };

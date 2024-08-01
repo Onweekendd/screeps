@@ -2,6 +2,7 @@ type HARVESTER_TYPE = "harvester";
 type UPDATER_TYPE = "updater";
 type BUILDER_TYPE = "builder";
 type SUPER_HARVESTER_TYPE = "superHarvester";
+type REPAIRER_TYPE = "repairer";
 
 type WorkingFlow = (workArguments: any) => {
   // 前置准备工作 如到岗
@@ -19,6 +20,7 @@ interface RoleType {
   updater: WorkingFlow;
   builder: WorkingFlow;
   superHarvester: WorkingFlow;
+  repairer: WorkingFlow;
 }
 interface Memory {
   creepConfigs?: {
@@ -27,7 +29,11 @@ interface Memory {
       args: Record<string, any>;
     };
   };
-  containerForHarvest?: Map<Id<StructureContainer>, Id<Creep>>;
+  containerForSuperHarvest?: {
+    containerId: Id<StructureContainer>;
+    creepName?: string;
+    sourceId?: Id<Source>;
+  }[];
 }
 
 interface CreepMemory {

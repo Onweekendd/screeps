@@ -12,7 +12,7 @@ function createBuilderByNum(options: BuilderOptions) {
   if (
     Object.keys(Game.creeps).filter(creepName => {
       return (Game.creeps[creepName] as ExtendCreep).memory.configName?.includes(BUILDER);
-    }).length <= 1
+    }).length <= 2
   ) {
     createBuilder(creepConfig, sourceId, containerIdList);
   }

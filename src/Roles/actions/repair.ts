@@ -1,35 +1,28 @@
 type HarvestArgs = {
   sourceId: Id<Source>;
-  targetTypeList: Array<STRUCTURE_STORAGE>;
   containerIdList?: Id<StructureContainer>[];
 };
-export const harvestWokingFlow: WorkingFlow = (arg: HarvestArgs) => {
-  const { sourceId, targetTypeList, containerIdList } = arg;
+export const repairWokingFlow: WorkingFlow = (arg: HarvestArgs) => {
+  const { sourceId, containerIdList } = arg;
   return {
     target: (creep: Creep) => {
-      if (creep.store[RESOURCE_ENERGY] === 0 || !targetTypeList) {
+      if (creep.store[RESOURCE_ENERGY] === 0) {
         return true;
       }
-      let structureToBuildNum = 0;
-      for (let i = 0; i < targetTypeList.length; i++) {
-        const targetType = targetTypeList[i];
-
-        const targetList = creep.room.find(FIND_STRUCTURES, {
-          filter: structure =>
-            structure.structureType === targetType &&
-            structure.store &&
-            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-        });
-        structureToBuildNum += targetList.length;
-        if (targetList && !targetList.length) {
-        } else {
-          if (creep.transfer(targetList[0], RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-            creep.moveTo(targetList[0], { visualizePathStyle: { stroke: "#ffffff" } });
+      let structureToRepairNum = 0;
+      const structureList = creep.room.find(FIND_STRUCTURES);
+      structureList.sort((a, b) => b.hits - a.hits);
+      for (let i = 0; i < structureList.length; i++) {
+        const structure = structureList[i];
+        if (structure.hits < structure.hitsMax) {
+          structureToRepairNum += 1;
+          if (creep.repair(structure) === ERR_NOT_IN_RANGE) {
+            creep.moveTo(structure, { visualizePathStyle: { stroke: "#ffffff" } });
+            break;
           }
-          break;
         }
       }
-      if (structureToBuildNum === 0) {
+      if (structureToRepairNum === 0) {
         creep.moveTo(creep.room.controller!, { visualizePathStyle: { stroke: "#ffffff" } });
       }
 

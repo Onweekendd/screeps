@@ -19,6 +19,7 @@ class ExtendCreep extends Creep {
     if (action.prepare) {
       if (!this.memory.ready) {
         this.memory.ready = action.prepare(this);
+        return;
       }
     }
 

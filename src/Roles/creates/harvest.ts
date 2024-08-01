@@ -6,22 +6,29 @@ type HarvesterOptions = {
   creepConfig?: BodyPartConstant[];
   sourceId: Id<Source>;
   targetTypeList?: Array<STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_CONTAINER>;
+  containerIdList?: Id<StructureContainer>[];
 };
 function createHarvesterByNum(options: HarvesterOptions) {
-  const { creepConfig = [WORK, CARRY, MOVE], sourceId, targetTypeList = [STRUCTURE_SPAWN] } = options;
+  const {
+    creepConfig = [WORK, CARRY, MOVE],
+    sourceId,
+    targetTypeList = [STRUCTURE_SPAWN],
+    containerIdList = []
+  } = options;
   if (
     Object.keys(Game.creeps).filter(creepName => {
       return (Game.creeps[creepName] as ExtendCreep).memory.configName?.includes(HARVESTER);
-    }).length <= 1
+    }).length <= 3
   ) {
-    createHarvester(creepConfig, sourceId, targetTypeList);
+    createHarvester(creepConfig, sourceId, targetTypeList, containerIdList);
   }
 }
 
 function createHarvester(
   creepConfig: BodyPartConstant[] = [WORK, CARRY, MOVE],
   sourceId: Id<Source>,
-  targetTypeList: Array<STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_CONTAINER>
+  targetTypeList: Array<STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_CONTAINER>,
+  containerIdList: Id<StructureContainer>[]
 ) {
   const workerName = HARVESTER + Game.time;
   Game.spawns["Spawn1"].spawnCreep(creepConfig, workerName, {
@@ -31,7 +38,7 @@ function createHarvester(
       working: true
     }
   });
-  CreepsApi.add(workerName, HARVESTER, { sourceId, targetTypeList });
+  CreepsApi.add(workerName, HARVESTER, { sourceId, targetTypeList, containerIdList });
 }
 
 export { createHarvesterByNum };

@@ -3,15 +3,16 @@ function buildStructuresAroundTarget(data: {
   room: Room;
   structureType: STRUCTURE_EXTENSION | STRUCTURE_CONTAINER;
   range?: number;
+  distance?: number;
 }) {
-  const { targetPosition, room, structureType, range = 1 } = data;
+  const { targetPosition, room, structureType, range = 1, distance = 1 } = data;
   if (!checEnableBuild(room, structureType)) return;
   // 获取目标的位置
   const { x, y } = targetPosition;
 
   // 遍历范围内的每个位置
-  for (let dx = -range; dx <= range; dx++) {
-    for (let dy = -range; dy <= range; dy++) {
+  for (let dx = -range; dx <= range; dx += distance) {
+    for (let dy = -range; dy <= range; dy += distance) {
       // 计算目标位置
       const targetX = x + dx;
       const targetY = y + dy;
@@ -26,12 +27,7 @@ function buildStructures(room: Room, x: number, y: number, structureType: STRUCT
   // 检查目标位置是否可建造
   if (buildPosition !== TERRAIN_MASK_WALL) {
     // 尝试在目标位置建造container
-    const result = room.createConstructionSite(x, y, structureType);
-    if (result === OK) {
-      console.log(`Construction site for container placed at (${x}, ${y})`);
-    } else {
-      console.log(`Failed to place construction site at (${x}, ${y}): ${result}`);
-    }
+    room.createConstructionSite(x, y, structureType);
   }
 }
 
@@ -49,7 +45,6 @@ function checEnableBuild(room: Room, structureType: STRUCTURE_EXTENSION | STRUCT
 
   // 如果当前的extension数量和建造中的extension数量之和已经达到上限，则不再建造
   if (currentExtensions + constructionSites >= maxExtensions) {
-    console.log(`The room already has the maximum number of extensions (${maxExtensions}).`);
     return false;
   }
 
