@@ -11,7 +11,6 @@ export const updateWokingFlow: WorkingFlow = (arg: UpdateArgs) => {
       }
       const controller = creep.room.controller;
       if (!controller) {
-        console.log("Controller not found");
         return true;
       }
       if (creep.upgradeController(controller) === ERR_NOT_IN_RANGE) {
@@ -28,7 +27,6 @@ export const updateWokingFlow: WorkingFlow = (arg: UpdateArgs) => {
           const container = Game.getObjectById(containerId);
           if (container && container.store[RESOURCE_ENERGY] > 0) {
             if (creep.withdraw(container, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-              console.log(`Container ${containerId} found, withdrawing energy`);
               creep.moveTo(container, { visualizePathStyle: { stroke: "#ffaa00" } });
             }
             return false;
@@ -37,7 +35,6 @@ export const updateWokingFlow: WorkingFlow = (arg: UpdateArgs) => {
       }
       const source = Game.getObjectById(sourceId);
       if (!source) {
-        console.log(`Source ${sourceId} not found`);
         return true;
       }
       if (creep.harvest(source) === ERR_NOT_IN_RANGE) {

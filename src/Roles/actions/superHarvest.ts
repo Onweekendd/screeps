@@ -10,7 +10,6 @@ export const superHarvestWokingFlow: WorkingFlow = (arg: UpdateArgs) => {
     prepare: (creep: Creep) => {
       const container = Game.getObjectById(containerId);
       if (!container) {
-        console.log(`Container ${containerId} not found`);
         return false;
       }
       if (!creep.pos.isEqualTo(container.pos)) {

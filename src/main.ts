@@ -10,12 +10,14 @@ import CreepsApi from "CreepsApi";
 import { SUPER_HARVESTER } from "types";
 import { containerCheck } from "utils/containerCheck";
 import { createRepairerByNum } from "Roles/creates/repair";
+import Scanner from "utils/scanner";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 
 mountCreep();
 const mainRoom = Game.spawns["Spawn1"].room;
+Scanner(mainRoom.name);
 const extensionsPosition = new RoomPosition(22, 8, mainRoom.name);
 export const loop = ErrorMapper.wrapLoop(() => {
   const sourceList = statisticsUtils.sourceList(mainRoom);

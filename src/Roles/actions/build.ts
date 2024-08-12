@@ -16,7 +16,6 @@ export const buildWokingFlow: WorkingFlow = (arg: UpdateArgs) => {
           creep.moveTo(target, { visualizePathStyle: { stroke: "#ffffff" } });
         }
       } else {
-        console.log("No construction site found");
         creep.moveTo(creep.room.controller!, { visualizePathStyle: { stroke: "#ffffff" } });
       }
       return false;
@@ -38,7 +37,6 @@ export const buildWokingFlow: WorkingFlow = (arg: UpdateArgs) => {
       }
       const source = Game.getObjectById(sourceId);
       if (!source) {
-        console.log(`Source ${sourceId} not found`);
         return true;
       }
       if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
