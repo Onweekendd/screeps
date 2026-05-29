@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJs"
-  }
+    "types": ["screeps", "node", "mocha"]
+  },
+  "include": ["src", "test"]
 }

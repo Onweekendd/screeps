@@ -1,17 +1,17 @@
 import CreepsApi from "CreepsApi";
 import ExtendCreep from "../../Creeps/ExtendCreep/ExtendCreep";
-import { BUILDER } from "types";
+import { BUILDER, MAIN_SPAWN } from "types";
 
-type BuilderOptions = {
+interface BuilderOptions {
   creepConfig?: BodyPartConstant[];
   sourceId: Id<Source>;
   containerIdList?: Id<StructureContainer>[];
-};
+}
 function createBuilderByNum(options: BuilderOptions) {
   const { creepConfig = [WORK, CARRY, MOVE], sourceId, containerIdList = [] } = options;
   if (
     Object.keys(Game.creeps).filter(creepName => {
-      return (Game.creeps[creepName] as ExtendCreep).memory.configName?.includes(BUILDER);
+      return Game.creeps[creepName].memory.configName?.includes(BUILDER);
     }).length <= 2
   ) {
     createBuilder(creepConfig, sourceId, containerIdList);
@@ -24,7 +24,7 @@ function createBuilder(
   containerIdList: Id<StructureContainer>[] = []
 ) {
   const workerName = BUILDER + Game.time;
-  Game.spawns["Spawn1"].spawnCreep(creepConfig, workerName, {
+  Game.spawns[MAIN_SPAWN].spawnCreep(creepConfig, workerName, {
     memory: {
       configName: workerName,
       ready: true,

@@ -1,21 +1,17 @@
 import CreepsApi from "CreepsApi";
 import ExtendCreep from "../../Creeps/ExtendCreep/ExtendCreep";
-import { REPAIRER } from "types";
+import { MAIN_SPAWN, REPAIRER } from "types";
 
-type RepairerOptions = {
+interface RepairerOptions {
   creepConfig?: BodyPartConstant[];
   sourceId: Id<Source>;
   containerIdList?: Id<StructureContainer>[];
-};
+}
 function createRepairerByNum(options: RepairerOptions) {
-  const {
-    creepConfig = [WORK, CARRY, MOVE],
-    sourceId,
-    containerIdList = []
-  } = options;
+  const { creepConfig = [WORK, CARRY, MOVE], sourceId, containerIdList = [] } = options;
   if (
     Object.keys(Game.creeps).filter(creepName => {
-      return (Game.creeps[creepName] as ExtendCreep).memory.configName?.includes(REPAIRER);
+      return Game.creeps[creepName].memory.configName?.includes(REPAIRER);
     }).length <= 1
   ) {
     createRepairer(creepConfig, sourceId, containerIdList);
@@ -28,7 +24,7 @@ function createRepairer(
   containerIdList: Id<StructureContainer>[]
 ) {
   const workerName = REPAIRER + Game.time;
-  Game.spawns["Spawn1"].spawnCreep(creepConfig, workerName, {
+  Game.spawns[MAIN_SPAWN].spawnCreep(creepConfig, workerName, {
     memory: {
       configName: workerName,
       ready: true,

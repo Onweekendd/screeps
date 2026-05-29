@@ -1,6 +1,6 @@
 import CreepsApi from "CreepsApi";
 import ExtendCreep from "../../Creeps/ExtendCreep/ExtendCreep";
-import { SUPER_HARVESTER } from "types";
+import { SUPER_HARVESTER, MAIN_SPAWN } from "types";
 
 type SuperHarvesterOptions = {
   creepConfig?: BodyPartConstant[];
@@ -26,7 +26,7 @@ function createSuperHarvester(
   containerId: Id<StructureContainer>
 ) {
   const creepName = SUPER_HARVESTER + Game.time + Math.floor(Math.random() * 1000);
-  Game.spawns["Spawn1"].spawnCreep(creepConfig, creepName, {
+  Game.spawns[MAIN_SPAWN].spawnCreep(creepConfig, creepName, {
     memory: {
       configName: creepName,
       ready: false,

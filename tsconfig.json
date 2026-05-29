@@ -11,8 +11,11 @@
     "experimentalDecorators": true,
     "noImplicitReturns": true,
     "allowSyntheticDefaultImports": true,
-    "allowUnreachableCode": false
+    "allowUnreachableCode": false,
+    "allowUmdGlobalAccess": true,
+    "types": ["screeps", "node"]
   },
+  "include": ["src"],
   "exclude": [
     "node_modules"
   ]

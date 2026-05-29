@@ -1,6 +1,6 @@
 import CreepsApi from "CreepsApi";
 import ExtendCreep from "../../Creeps/ExtendCreep/ExtendCreep";
-import { UPDATER } from "types";
+import { UPDATER, MAIN_SPAWN } from "types";
 
 type UpdaterOptions = {
   creepConfig?: BodyPartConstant[];
@@ -24,7 +24,7 @@ function createUpdater(
   containerIdList: Id<StructureContainer>[] = []
 ) {
   const workerName = UPDATER + Game.time;
-  Game.spawns["Spawn1"].spawnCreep(creepConfig, workerName, {
+  Game.spawns[MAIN_SPAWN].spawnCreep(creepConfig, workerName, {
     memory: {
       configName: workerName,
       ready: true,

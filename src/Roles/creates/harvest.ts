@@ -1,6 +1,6 @@
 import CreepsApi from "CreepsApi";
 import ExtendCreep from "../../Creeps/ExtendCreep/ExtendCreep";
-import { HARVESTER } from "types";
+import { HARVESTER, MAIN_SPAWN } from "types";
 
 type HarvesterOptions = {
   creepConfig?: BodyPartConstant[];
@@ -31,7 +31,7 @@ function createHarvester(
   containerIdList: Id<StructureContainer>[]
 ) {
   const workerName = HARVESTER + Game.time;
-  Game.spawns["Spawn1"].spawnCreep(creepConfig, workerName, {
+  Game.spawns[MAIN_SPAWN].spawnCreep(creepConfig, workerName, {
     memory: {
       configName: workerName,
       ready: true,
