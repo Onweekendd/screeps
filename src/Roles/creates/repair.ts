@@ -1,6 +1,7 @@
 import CreepsApi from "CreepsApi";
-import ExtendCreep from "../../Creeps/ExtendCreep/ExtendCreep";
 import { MAIN_SPAWN, REPAIRER } from "types";
+
+import ExtendCreep from "../../Creeps/ExtendCreep/ExtendCreep";
 
 interface RepairerOptions {
   creepConfig?: BodyPartConstant[];

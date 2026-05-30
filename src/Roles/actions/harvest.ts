@@ -1,8 +1,8 @@
-type HarvestArgs = {
+interface HarvestArgs {
   sourceId: Id<Source>;
-  targetTypeList: Array<STRUCTURE_STORAGE>;
+  targetTypeList: STRUCTURE_STORAGE[];
   containerIdList?: Id<StructureContainer>[];
-};
+}
 export const harvestWokingFlow: WorkingFlow = (arg: HarvestArgs) => {
   const { sourceId, targetTypeList, containerIdList } = arg;
   return {

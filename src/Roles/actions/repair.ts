@@ -1,7 +1,7 @@
-type HarvestArgs = {
+interface HarvestArgs {
   sourceId: Id<Source>;
   containerIdList?: Id<StructureContainer>[];
-};
+}
 export const repairWokingFlow: WorkingFlow = (arg: HarvestArgs) => {
   const { sourceId, containerIdList } = arg;
   return {

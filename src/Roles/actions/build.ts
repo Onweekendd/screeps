@@ -1,7 +1,7 @@
-type UpdateArgs = {
+interface UpdateArgs {
   sourceId: Id<Source>;
   containerIdList?: Id<StructureContainer>[];
-};
+}
 export const buildWokingFlow: WorkingFlow = (arg: UpdateArgs) => {
   const { sourceId, containerIdList } = arg;
   return {

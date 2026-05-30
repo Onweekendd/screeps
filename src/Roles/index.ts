@@ -1,8 +1,8 @@
 import { buildWokingFlow } from "./actions/build";
 import { harvestWokingFlow } from "./actions/harvest";
-import { updateWokingFlow } from "./actions/update";
-import { superHarvestWokingFlow } from "./actions/superHarvest";
 import { repairWokingFlow } from "./actions/repair";
+import { superHarvestWokingFlow } from "./actions/superHarvest";
+import { updateWokingFlow } from "./actions/update";
 
 const roles: RoleType = {
   harvester: harvestWokingFlow,
@@ -11,6 +11,5 @@ const roles: RoleType = {
   superHarvester: superHarvestWokingFlow,
   repairer: repairWokingFlow
 };
-
 
 export default roles;

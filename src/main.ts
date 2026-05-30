@@ -1,16 +1,13 @@
+import mountCreep from "Creeps/mount";
+import { buildStructuresAroundTarget } from "Spawn/buildStructs";
+import { MAIN_SPAWN } from "types";
+import { containerCheck } from "utils/containerCheck";
 import { ErrorMapper } from "utils/ErrorMapper";
+import Scanner from "utils/scanner";
+import statisticsUtils from "utils/statistics";
+
 import { createHarvesterByNum } from "./Roles/creates/harvest";
 import { createUpdaterByNum } from "./Roles/creates/update";
-import { createBuilderByNum } from "Roles/creates/build";
-import { buildStructuresAroundTarget } from "Spawn/buildStructs";
-import mountCreep from "Creeps/mount";
-import statisticsUtils from "utils/statistics";
-import { createSuperHarvesterByNum } from "Roles/creates/superHarvest";
-import CreepsApi from "CreepsApi";
-import { SUPER_HARVESTER, MAIN_SPAWN } from "types";
-import { containerCheck } from "utils/containerCheck";
-import { createRepairerByNum } from "Roles/creates/repair";
-import Scanner from "utils/scanner";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -21,17 +18,15 @@ Scanner(mainRoom.name);
 const extensionsPosition = new RoomPosition(22, 8, mainRoom.name);
 export const loop = ErrorMapper.wrapLoop(() => {
   const sourceList = statisticsUtils.sourceList(mainRoom);
-  const sourceForSuperHarvester = sourceList[0];
-  const sourceForBuilder = sourceList[1];
   const sourceForUpdater = sourceList[1];
   const sourceForHarvester = sourceList[1];
   const containerList = statisticsUtils.containerList(mainRoom);
-  const containerIdList = containerList.map(container => container.id) as Id<StructureContainer>[];
+  const containerIdList = containerList.map(container => container.id);
   if (!Memory.containerForSuperHarvest || !(Memory.containerForSuperHarvest instanceof Array)) {
     Memory.containerForSuperHarvest = [];
   }
   containerIdList.forEach(containerId => {
-    let nearSourceId: Id<Source> | undefined = undefined;
+    let nearSourceId: Id<Source> | undefined;
     const container = Game.getObjectById(containerId) as StructureContainer;
     sourceList.forEach(source => {
       if (source.pos.inRangeTo(container, 1)) {

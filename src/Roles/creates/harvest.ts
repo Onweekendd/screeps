@@ -1,13 +1,14 @@
 import CreepsApi from "CreepsApi";
-import ExtendCreep from "../../Creeps/ExtendCreep/ExtendCreep";
 import { HARVESTER, MAIN_SPAWN } from "types";
 
-type HarvesterOptions = {
+import ExtendCreep from "../../Creeps/ExtendCreep/ExtendCreep";
+
+interface HarvesterOptions {
   creepConfig?: BodyPartConstant[];
   sourceId: Id<Source>;
-  targetTypeList?: Array<STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_CONTAINER>;
+  targetTypeList?: (STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_CONTAINER)[];
   containerIdList?: Id<StructureContainer>[];
-};
+}
 function createHarvesterByNum(options: HarvesterOptions) {
   const {
     creepConfig = [WORK, CARRY, MOVE],
@@ -17,7 +18,7 @@ function createHarvesterByNum(options: HarvesterOptions) {
   } = options;
   if (
     Object.keys(Game.creeps).filter(creepName => {
-      return (Game.creeps[creepName] as ExtendCreep).memory.configName?.includes(HARVESTER);
+      return Game.creeps[creepName].memory.configName?.includes(HARVESTER);
     }).length <= 3
   ) {
     createHarvester(creepConfig, sourceId, targetTypeList, containerIdList);
@@ -27,7 +28,7 @@ function createHarvesterByNum(options: HarvesterOptions) {
 function createHarvester(
   creepConfig: BodyPartConstant[] = [WORK, CARRY, MOVE],
   sourceId: Id<Source>,
-  targetTypeList: Array<STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_CONTAINER>,
+  targetTypeList: (STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_CONTAINER)[],
   containerIdList: Id<StructureContainer>[]
 ) {
   const workerName = HARVESTER + Game.time;
