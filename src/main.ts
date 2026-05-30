@@ -1,13 +1,12 @@
 import mountCreep from "Creeps/mount";
 import { buildStructuresAroundTarget } from "Spawn/buildStructs";
+import { buildSpawnQueue } from "Spawn/demands";
+import { consumeSpawnQueue } from "Spawn/SpawnQueue";
 import { MAIN_SPAWN } from "types";
 import { containerCheck } from "utils/containerCheck";
 import { ErrorMapper } from "utils/ErrorMapper";
 import Scanner from "utils/scanner";
 import statisticsUtils from "utils/statistics";
-
-import { createHarvesterByNum } from "./Roles/creates/harvest";
-import { createUpdaterByNum } from "./Roles/creates/update";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -31,9 +30,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
   if (sourceList.length === 0) {
     return;
   }
-  // 两个 source 分别供给，单 source 房间则都退回 [0]，不再统一写死成 [1]（原来 sourceList[0] 闲置且单源会越界）
-  const sourceForHarvester = sourceList[0];
-  const sourceForUpdater = sourceList[1] ?? sourceList[0];
   const containerList = statisticsUtils.containerList(mainRoom);
   const containerIdList = containerList.map(container => container.id);
   if (!Memory.containerForSuperHarvest || !(Memory.containerForSuperHarvest instanceof Array)) {
@@ -75,17 +71,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
     range: 6,
     distance: 2
   });
-  createHarvesterByNum({
-    sourceId: sourceForHarvester.id,
-    targetTypeList: [STRUCTURE_SPAWN, STRUCTURE_EXTENSION],
-    creepConfig: [MOVE, WORK, CARRY],
-    containerIdList
-  });
-  createUpdaterByNum({
-    creepConfig: [MOVE, CARRY, WORK],
-    containerIdList,
-    sourceId: sourceForUpdater.id
-  });
+  // 需求驱动:扫描世界 → 生成生产队列(每 tick 重建)→ spawn 按优先级消费
+  const spawnQueue = buildSpawnQueue({ room: mainRoom, sources: sourceList, containerIdList });
+  consumeSpawnQueue([mainSpawn], spawnQueue);
   // createBuilderByNum({
   //   sourceId: sourceForSuperHarvester.id,
   //   containerIdList

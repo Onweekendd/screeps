@@ -42,6 +42,21 @@ interface CreepMemory {
   working: boolean;
 }
 
+// 生产需求:一条请求 = 缺一个 creep。每 tick 重建,不跨 tick(架构文档 2.3)
+interface SpawnRequest {
+  role: keyof RoleType;
+  // 数字越小越优先(架构文档 2.4)
+  priority: number;
+  body: BodyPartConstant[];
+  // 写入 creepConfigs 的角色参数(含目的地);即架构文档里所说的 "memory"
+  args: Record<string, any>;
+  // 初始 CreepMemory 标志,默认均为 true
+  ready?: boolean;
+  working?: boolean;
+  // creep 命名前缀,默认用 role
+  namePrefix?: string;
+}
+
 interface Creep {
   work(): void;
 }
