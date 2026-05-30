@@ -10,10 +10,13 @@ export const repairWokingFlow: WorkingFlow = (arg: HarvestArgs) => {
         return true;
       }
       let structureToRepairNum = 0;
-      const structureList = creep.room.find(FIND_STRUCTURES);
-      structureList.sort((a, b) => b.hits - a.hits);
-      for (let i = 0; i < structureList.length; i++) {
-        const structure = structureList[i];
+      // 墙 / rampart 的 hitsMax 高达数亿且初始 hits=1，纳入会让修理工把能量无限砸进墙体，先排除
+      const structureList = creep.room
+        .find(FIND_STRUCTURES)
+        .filter(s => s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART);
+      // 升序：受损最重（hits 最小）的优先修，原来是降序，等于先修最完好的
+      structureList.sort((a, b) => a.hits - b.hits);
+      for (const structure of structureList) {
         if (structure.hits < structure.hitsMax) {
           structureToRepairNum += 1;
           if (creep.repair(structure) === ERR_NOT_IN_RANGE) {

@@ -13,13 +13,27 @@ import { createUpdaterByNum } from "./Roles/creates/update";
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 
 mountCreep();
-const mainRoom = Game.spawns[MAIN_SPAWN].room;
-Scanner(mainRoom.name);
-const extensionsPosition = new RoomPosition(22, 8, mainRoom.name);
+// 地形扫描只需在每次 global reset 后跑一次，用标志位控制，放进 loop 里以受 ErrorMapper 保护
+let terrainScanned = false;
 export const loop = ErrorMapper.wrapLoop(() => {
+  // spawn 可能被摧毁，访问前先判空，避免在全局作用域 / 未受保护处崩溃
+  const mainSpawn = Game.spawns[MAIN_SPAWN];
+  if (!mainSpawn) {
+    return;
+  }
+  const mainRoom = mainSpawn.room;
+  if (!terrainScanned) {
+    Scanner(mainRoom.name);
+    terrainScanned = true;
+  }
+  const extensionsPosition = new RoomPosition(22, 8, mainRoom.name);
   const sourceList = statisticsUtils.sourceList(mainRoom);
-  const sourceForUpdater = sourceList[1];
-  const sourceForHarvester = sourceList[1];
+  if (sourceList.length === 0) {
+    return;
+  }
+  // 两个 source 分别供给，单 source 房间则都退回 [0]，不再统一写死成 [1]（原来 sourceList[0] 闲置且单源会越界）
+  const sourceForHarvester = sourceList[0];
+  const sourceForUpdater = sourceList[1] ?? sourceList[0];
   const containerList = statisticsUtils.containerList(mainRoom);
   const containerIdList = containerList.map(container => container.id);
   if (!Memory.containerForSuperHarvest || !(Memory.containerForSuperHarvest instanceof Array)) {
