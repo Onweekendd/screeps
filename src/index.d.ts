@@ -36,10 +36,22 @@ interface Memory {
   }[];
 }
 
+// 任务种类:对应任务工厂(src/Tasks)里登记的具体命令
+type TaskType = "harvest" | "withdraw" | "build" | "idle";
+
+// 可序列化的任务描述符:存进 creep.memory,每 tick 由工厂重建成 Task 对象(架构文档 2.3)
+interface TaskDescriptor {
+  type: TaskType;
+  // 世界目标的 id;每 tick run() 第一步拿它回世界核对(免善后)
+  targetId?: string;
+}
+
 interface CreepMemory {
   configName: string;
   ready: boolean;
   working: boolean;
+  // 当前持有的任务描述符;命令模式的"可序列化部分"
+  task?: TaskDescriptor;
 }
 
 // 生产需求:一条请求 = 缺一个 creep。每 tick 重建,不跨 tick(架构文档 2.3)

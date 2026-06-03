@@ -1,13 +1,12 @@
-import { buildWokingFlow } from "./actions/build";
 import { harvestWokingFlow } from "./actions/harvest";
 import { repairWokingFlow } from "./actions/repair";
 import { superHarvestWokingFlow } from "./actions/superHarvest";
 import { updateWokingFlow } from "./actions/update";
 
-const roles: RoleType = {
+// 仍走旧 2 状态 WorkingFlow 的角色。builder 已迁移到 Task 体系(见 Tasks/providers),不在此表。
+const roles: Partial<RoleType> = {
   harvester: harvestWokingFlow,
   updater: updateWokingFlow,
-  builder: buildWokingFlow,
   superHarvester: superHarvestWokingFlow,
   repairer: repairWokingFlow
 };
