@@ -24,9 +24,11 @@ const DESIRED = {
   repairer: 1
 };
 
-// 按角色名统计当前存活数(含孵化中);configName 形如 "harvester12345"
+// 按角色名统计当前存活数(含孵化中)。
+// configName 形如 "harvester12345_0",用 startsWith 精确匹配,
+// 避免 "superHarvester" 被 includes("harvester") 误计为 harvester。
 function countAlive(role: string): number {
-  return Object.keys(Game.creeps).filter(name => Game.creeps[name].memory.configName?.includes(role)).length;
+  return Object.keys(Game.creeps).filter(name => Game.creeps[name].memory.configName?.startsWith(role)).length;
 }
 
 // 统计每个 source 当前已分配的存活 creep 数:从 creepConfigs.args.sourceId 反查。
