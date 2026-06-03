@@ -37,13 +37,15 @@ interface Memory {
 }
 
 // 任务种类:对应任务工厂(src/Tasks)里登记的具体命令
-type TaskType = "harvest" | "withdraw" | "build" | "idle";
+type TaskType = "harvest" | "withdraw" | "build" | "idle" | "mine";
 
 // 可序列化的任务描述符:存进 creep.memory,每 tick 由工厂重建成 Task 对象(架构文档 2.3)
 interface TaskDescriptor {
   type: TaskType;
   // 世界目标的 id;每 tick run() 第一步拿它回世界核对(免善后)
   targetId?: string;
+  // 辅助目标(MineTask 专用:targetId = containerId,sourceId = 要采的矿)
+  sourceId?: string;
 }
 
 interface CreepMemory {

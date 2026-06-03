@@ -1,5 +1,5 @@
 import mountCreep from "Creeps/mount";
-import { buildStructuresAroundTarget } from "Spawn/buildStructs";
+import { planConstruction } from "Spawn/buildStructs";
 import { buildSpawnQueue } from "Spawn/demands";
 import { consumeSpawnQueue } from "Spawn/SpawnQueue";
 import { MAIN_SPAWN } from "types";
@@ -15,8 +15,10 @@ mountCreep();
 // 地形扫描只需在每次 global reset 后跑一次，用标志位控制，放进 loop 里以受 ErrorMapper 保护
 let terrainScanned = false;
 export const loop = ErrorMapper.wrapLoop(() => {
-  // spawn 可能被摧毁，访问前先判空，避免在全局作用域 / 未受保护处崩溃
-  const mainSpawn = Game.spawns[MAIN_SPAWN];
+  // spawn 可能被摧毁，访问前先判空，避免在全局作用域 / 未受保护处崩溃。
+  // 优先用约定名 MAIN_SPAWN；找不到时回退到当前任意一个 spawn，
+  // 这样重生后即便没沿用原名，主循环也能照常 bootstrap，不会因名字不符而空转。
+  const mainSpawn = Game.spawns[MAIN_SPAWN] ?? Object.values(Game.spawns)[0];
   if (!mainSpawn) {
     return;
   }
@@ -25,7 +27,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
     Scanner(mainRoom.name);
     terrainScanned = true;
   }
-  const extensionsPosition = new RoomPosition(22, 8, mainRoom.name);
   const sourceList = statisticsUtils.sourceList(mainRoom);
   if (sourceList.length === 0) {
     return;
@@ -52,48 +53,12 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
   });
 
-  // buildStructuresAroundTarget({
-  //   targetPosition: sourceForSuperHarvester.pos,
-  //   structureType: STRUCTURE_CONTAINER,
-  //   room: mainRoom
-  // });
-
-  // buildStructuresAroundTarget({
-  //   targetPosition: sourceForBuilder.pos,
-  //   structureType: STRUCTURE_CONTAINER,
-  //   room: mainRoom
-  // });
-
-  buildStructuresAroundTarget({
-    targetPosition: extensionsPosition,
-    structureType: STRUCTURE_EXTENSION,
-    room: mainRoom,
-    range: 6,
-    distance: 2
-  });
+  // 需求驱动的建筑规划:扫描世界 → 把缺的 container/extension 工地放下去 → 汇入建造线
+  planConstruction({ room: mainRoom, sources: sourceList, anchor: mainSpawn.pos });
   // 需求驱动:扫描世界 → 生成生产队列(每 tick 重建)→ spawn 按优先级消费
   const spawnQueue = buildSpawnQueue({ room: mainRoom, sources: sourceList, containerIdList });
   consumeSpawnQueue([mainSpawn], spawnQueue);
-  // createBuilderByNum({
-  //   sourceId: sourceForSuperHarvester.id,
-  //   containerIdList
-  // });
-  // createRepairerByNum({
-  //   sourceId: sourceForBuilder.id,
-  //   containerIdList
-  // });
 
-  // for (const container of containerList) {
-  //   const containerForSuperHarvest = Memory.containerForSuperHarvest.find(z => z.containerId === container.id);
-  //   if (containerForSuperHarvest && containerForSuperHarvest.creepName) {
-  //     createSuperHarvesterByNum({
-  //       sourceId: containerForSuperHarvest.sourceId ?? sourceForSuperHarvester.id,
-  //       containerId: container.id as Id<StructureContainer>,
-  //       containerNum: containerList.length,
-  //       creepConfig: [MOVE, WORK, WORK]
-  //     });
-  //   }
-  // }
   Object.values(Game.creeps).forEach(creep => {
     creep.work();
   });

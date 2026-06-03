@@ -1,6 +1,7 @@
 import { BuildTask } from "./BuildTask";
 import { HarvestTask } from "./HarvestTask";
 import { IdleTask } from "./IdleTask";
+import { MineTask } from "./MineTask";
 import type { Task } from "./Task";
 import { WithdrawTask } from "./WithdrawTask";
 
@@ -10,7 +11,8 @@ const registry: Record<TaskType, (desc: TaskDescriptor) => Task> = {
   harvest: desc => new HarvestTask(desc.targetId as Id<Source>),
   withdraw: desc => new WithdrawTask(desc.targetId as Id<StructureContainer>),
   build: desc => new BuildTask(desc.targetId as Id<ConstructionSite>),
-  idle: () => new IdleTask()
+  idle: () => new IdleTask(),
+  mine: desc => new MineTask(desc.targetId as Id<StructureContainer>, desc.sourceId as Id<Source>)
 };
 
 // 从可序列化描述符现造一个一次性 Task 对象(命令模式 + 工厂模式,任务机制设计 2.3)
