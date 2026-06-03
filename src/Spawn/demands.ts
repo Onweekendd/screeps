@@ -16,10 +16,8 @@ const PRIORITY = {
   UPGRADE: 30
 };
 
-// 各角色目标存活数
+// 各角色目标存活数(静态的;动态计算的角色不在此列)
 const DESIRED = {
-  harvester: 3,
-  updater: 1,
   builder: 2,
   repairer: 1
 };
@@ -103,10 +101,13 @@ function requireHarvesters(ctx: RoomContext, load: Record<string, number>): Spaw
   return requests;
 }
 
-// 升级:同样走负载均衡——人少的矿优先,自然就和 harvester 错开,不必再写死第二个矿
+// 升级:根据 superHarvester 覆盖数动态调整。
+// 每个覆盖的 source 提供能量盈余,可多养一个 updater;上限 3 防止抢光能量。
+// 至少 1 个确保 controller 不掉级。
 function requireUpdaters(ctx: RoomContext, load: Record<string, number>): SpawnRequest[] {
+  const desired = Math.min(3, 1 + coveredSourceIds().size);
   const requests: SpawnRequest[] = [];
-  const missing = DESIRED.updater - countAlive(UPDATER);
+  const missing = desired - countAlive(UPDATER);
   for (let i = 0; i < missing; i++) {
     const source = pickLeastLoadedSource(ctx.sources, load);
     requests.push({
