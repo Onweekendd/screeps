@@ -59,12 +59,36 @@ function pickLeastLoadedSource(sources: Source[], load: Record<string, number>):
   return best;
 }
 
-// 基础采集:按各 source 真实负载均衡分配
+// 查出已被 superHarvester 覆盖的 source id 集合
+function coveredSourceIds(): Set<string> {
+  const configs = Memory.creepConfigs ?? {};
+  const covered = new Set<string>();
+  for (const name of Object.keys(Game.creeps)) {
+    const cfg = configs[Game.creeps[name].memory.configName];
+    if (cfg?.role === SUPER_HARVESTER) {
+      const sid = cfg.args?.sourceId as string | undefined;
+      if (sid) {
+        covered.add(sid);
+      }
+    }
+  }
+  return covered;
+}
+
+// 基础采集:superHarvester 接管的 source 不再需要专职 harvester 采矿。
+// 但只要 spawn 还靠 harvester 填能量(没有 hauler),至少保留 1 个当渡船。
+// 有未覆盖 source → 每个未覆盖 source 配 2 个 harvester;全覆盖 → 只保留 1 个渡船。
 function requireHarvesters(ctx: RoomContext, load: Record<string, number>): SpawnRequest[] {
+  const covered = coveredSourceIds();
+  const uncovered = ctx.sources.filter(s => !covered.has(s.id));
+  const desired = uncovered.length > 0 ? uncovered.length * 2 : 1;
+
   const requests: SpawnRequest[] = [];
-  const missing = DESIRED.harvester - countAlive(HARVESTER);
+  const missing = desired - countAlive(HARVESTER);
   for (let i = 0; i < missing; i++) {
-    const source = pickLeastLoadedSource(ctx.sources, load);
+    // 未覆盖 source 优先分配;全覆盖时随便挑一个(渡船去 container 取货)
+    const pool = uncovered.length > 0 ? uncovered : ctx.sources;
+    const source = pickLeastLoadedSource(pool, load);
     requests.push({
       role: HARVESTER,
       priority: PRIORITY.HARVEST,
