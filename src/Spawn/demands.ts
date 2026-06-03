@@ -163,7 +163,10 @@ function requireSuperHarvesters(): SpawnRequest[] {
     requests.push({
       role: SUPER_HARVESTER,
       priority: PRIORITY.SUPER_HARVEST,
-      body: [WORK, CARRY, MOVE], // CARRY 必须有:repair() 消耗 carry 能量
+      // 5×WORK = 10 能量/tick,恰好耗尽一个 source(3000能量/300tick再生)
+      // 1×CARRY 供 repair() 消耗;1×MOVE 够用(只走一次到岗位,之后静止)
+      // 总造价 600 能量,需 RCL3(容量800);低于此 SpawnQueue 会跳过等能量
+      body: [WORK, WORK, WORK, WORK, WORK, CARRY, MOVE],
       args: { containerId: slot.containerId, sourceId: slot.sourceId }
     });
   }
