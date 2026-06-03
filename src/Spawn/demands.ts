@@ -134,12 +134,31 @@ function requireRepairers(ctx: RoomContext, load: Record<string, number>): Spawn
   return requests;
 }
 
+// 按当前房间能量上限动态计算静态矿工 body:
+// 固定 1 CARRY(repair 用) + 1 MOVE(只走到岗位一次),剩余能量全给 WORK,上限 5 个。
+// 5 WORK = 10 能量/tick = source 再生速率(3000/300tick),超过无意义。
+// RCL1(300)→2W, RCL2(550)→4W, RCL3+(800+)→5W(封顶)
+function minerBody(room: Room): BodyPartConstant[] {
+  const capacity = room.energyCapacityAvailable;
+  const workCount = Math.min(5, Math.floor((capacity - 100) / 100));
+  if (workCount < 1) {
+    return [];
+  }
+  const works: BodyPartConstant[] = Array.from({ length: workCount }, () => WORK);
+  return [...works, CARRY, MOVE];
+}
+
 // 静态矿工:每个"紧邻 source 的真实 container"最多配一名静态矿工。
 // 门槛是 container 已存在(Memory.containerForSuperHarvest 由 main.ts 扫真实建筑写入),
 // 而非仅有工地——没有 container 就无法把能量存起来,有 CARRY 也没地方放(decay 照样侵蚀)。
 // 通过扫 creepConfigs.args.containerId 而非 slot.creepName 判断槽位是否占用,
 // 免去 spawn 时手动更新 slot 的善后负担。
-function requireSuperHarvesters(): SpawnRequest[] {
+function requireSuperHarvesters(ctx: RoomContext): SpawnRequest[] {
+  const body = minerBody(ctx.room);
+  if (body.length === 0) {
+    return []; // 能量上限不足 1 WORK + 1 CARRY + 1 MOVE
+  }
+
   const slots = Memory.containerForSuperHarvest ?? [];
   const configs = Memory.creepConfigs ?? {};
 
@@ -155,18 +174,15 @@ function requireSuperHarvesters(): SpawnRequest[] {
   const requests: SpawnRequest[] = [];
   for (const slot of slots) {
     if (!slot.sourceId) {
-      continue;
-    } // container 不在 source 旁,无法采矿
+      continue; // container 不在 source 旁,无法采矿
+    }
     if (occupied.has(slot.containerId)) {
-      continue;
-    } // 已有存活矿工
+      continue; // 已有存活矿工
+    }
     requests.push({
       role: SUPER_HARVESTER,
       priority: PRIORITY.SUPER_HARVEST,
-      // 5×WORK = 10 能量/tick,恰好耗尽一个 source(3000能量/300tick再生)
-      // 1×CARRY 供 repair() 消耗;1×MOVE 够用(只走一次到岗位,之后静止)
-      // 总造价 600 能量,需 RCL3(容量800);低于此 SpawnQueue 会跳过等能量
-      body: [WORK, WORK, WORK, WORK, WORK, CARRY, MOVE],
+      body,
       args: { containerId: slot.containerId, sourceId: slot.sourceId }
     });
   }
@@ -178,7 +194,7 @@ function requireSuperHarvesters(): SpawnRequest[] {
 export function buildSpawnQueue(ctx: RoomContext): SpawnRequest[] {
   const load = sourceLoad();
   return [
-    ...requireSuperHarvesters(),
+    ...requireSuperHarvesters(ctx),
     ...requireHarvesters(ctx, load),
     ...requireUpdaters(ctx, load),
     ...requireBuilders(ctx, load),
