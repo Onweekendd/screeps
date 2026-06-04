@@ -62,6 +62,7 @@ export default tseslint.config(
       "arrow-parens": ["off", "as-needed"],
       camelcase: "error",
       complexity: "off",
+      curly: ["error", "all"],
       "dot-notation": "error",
       "eol-last": "off",
       eqeqeq: ["error", "smart"],

@@ -1,4 +1,5 @@
 import { assignPrototype } from "utils/utils";
+
 import CreepExtension from "./ExtendCreep/ExtendCreep";
 
 /**

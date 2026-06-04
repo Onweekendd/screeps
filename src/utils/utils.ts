@@ -12,6 +12,8 @@ export const assignPrototype = function (obj1: { [key: string]: any }, obj2: { [
         enumerable: false,
         configurable: true
       });
-    } else obj1.prototype[key] = obj2.prototype[key];
+    } else {
+      obj1.prototype[key] = obj2.prototype[key];
+    }
   });
 };

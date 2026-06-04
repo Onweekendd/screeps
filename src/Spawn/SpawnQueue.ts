@@ -11,9 +11,7 @@ function spawnFromRequest(spawn: StructureSpawn, req: SpawnRequest, suffix: stri
   const name = `${req.namePrefix ?? req.role}${Game.time}${suffix}`;
   const result = spawn.spawnCreep(req.body, name, {
     memory: {
-      configName: name,
-      ready: req.ready ?? true,
-      working: req.working ?? true
+      configName: name
     }
   });
   if (result !== OK) {

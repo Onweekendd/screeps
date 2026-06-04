@@ -9,8 +9,8 @@ export interface RoomContext {
 
 // 优先级:数字越小越优先(架构文档 2.4)
 const PRIORITY = {
-  HARVEST: 5, // 基础采集兼填 spawn/extension,经济命脉,最高优先
-  SUPER_HARVEST: 8, // 静态矿工:比普通采集略低(依赖 container,bootstrap 阶段还不存在)
+  HAUL: 5, // 搬运工:填 spawn/extension/tower/storage,经济命脉,最高优先
+  SUPER_HARVEST: 8, // 静态矿工:比搬运略低(依赖 container,bootstrap 阶段还不存在)
   BUILD: 20,
   REPAIR: 25,
   UPGRADE: 30
@@ -73,29 +73,36 @@ function coveredSourceIds(): Set<string> {
   return covered;
 }
 
-// 基础采集:superHarvester 接管的 source 不再需要专职 harvester 采矿。
-// 但只要 spawn 还靠 harvester 填能量(没有 hauler),至少保留 1 个当渡船。
-// 有未覆盖 source → 每个未覆盖 source 配 2 个 harvester;全覆盖 → 只保留 1 个渡船。
+// 搬运工:有 container 时纯搬运(不需要 WORK),无 container 时 bootstrap 临时采矿。
+// 全覆盖后固定 2 个搬运工;bootstrap 阶段每个未覆盖 source 配 2 个。
 function requireHarvesters(ctx: RoomContext, load: Record<string, number>): SpawnRequest[] {
+  const hasContainers = ctx.containerIdList.length > 0;
+
+  if (hasContainers) {
+    // 纯搬运模式:固定 2 个,不绑定 source
+    const haulerMissing = 2 - countAlive(HARVESTER);
+    return Array.from({ length: Math.max(0, haulerMissing) }, () => ({
+      role: HARVESTER,
+      priority: PRIORITY.HAUL,
+      body: haulerBody(),
+      args: { containerIdList: ctx.containerIdList }
+    }));
+  }
+
+  // Bootstrap:还没有 container,需要 WORK 临时采矿填 spawn
   const covered = coveredSourceIds();
   const uncovered = ctx.sources.filter(s => !covered.has(s.id));
   const desired = uncovered.length > 0 ? uncovered.length * 2 : 1;
-
-  const requests: SpawnRequest[] = [];
   const missing = desired - countAlive(HARVESTER);
+  const requests: SpawnRequest[] = [];
   for (let i = 0; i < missing; i++) {
-    // 未覆盖 source 优先分配;全覆盖时随便挑一个(渡船去 container 取货)
     const pool = uncovered.length > 0 ? uncovered : ctx.sources;
     const source = pickLeastLoadedSource(pool, load);
     requests.push({
       role: HARVESTER,
-      priority: PRIORITY.HARVEST,
+      priority: PRIORITY.HAUL,
       body: [WORK, CARRY, MOVE],
-      args: {
-        sourceId: source.id,
-        targetTypeList: [STRUCTURE_SPAWN, STRUCTURE_EXTENSION],
-        containerIdList: ctx.containerIdList
-      }
+      args: { sourceId: source.id, containerIdList: ctx.containerIdList }
     });
   }
   return requests;
@@ -113,7 +120,7 @@ function requireUpdaters(ctx: RoomContext, load: Record<string, number>): SpawnR
     requests.push({
       role: UPDATER,
       priority: PRIORITY.UPGRADE,
-      body: [WORK, CARRY, MOVE],
+      body: updaterBody(),
       args: { sourceId: source.id, containerIdList: ctx.containerIdList }
     });
   }
@@ -159,6 +166,18 @@ function requireRepairers(ctx: RoomContext, load: Record<string, number>): Spawn
     });
   }
   return requests;
+}
+
+// 搬运工:固定 body,纯搬运,不需要 WORK。
+// [CARRY×4, MOVE×2] = 300 energy,200 携带量;造价低,快速复造,多开几个比一个大的强。
+function haulerBody(): BodyPartConstant[] {
+  return [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE];
+}
+
+// 升级工:固定 body,[WORK×3, CARRY, MOVE] = 400 energy。
+// container/storage 就在控制器附近,移动距离短,1 MOVE 够用。
+function updaterBody(): BodyPartConstant[] {
+  return [WORK, WORK, WORK, CARRY, MOVE];
 }
 
 // 按当前房间能量上限动态计算静态矿工 body:

@@ -2,7 +2,7 @@ import { type Task, TaskStatus } from "./Task";
 
 // 从 container 取能量:取满为止。空了 / 没了即 Invalid,creep 自动回退去挖矿。
 export class WithdrawTask implements Task {
-  public constructor(private readonly containerId: Id<StructureContainer>) {}
+  public constructor(private readonly containerId: Id<StructureContainer | StructureStorage>) {}
 
   public run(creep: Creep): TaskStatus {
     const container = Game.getObjectById(this.containerId);

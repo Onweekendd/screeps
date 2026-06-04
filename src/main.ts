@@ -3,7 +3,6 @@ import { planConstruction } from "Spawn/buildStructs";
 import { buildSpawnQueue } from "Spawn/demands";
 import { consumeSpawnQueue } from "Spawn/SpawnQueue";
 import { MAIN_SPAWN } from "types";
-import { containerCheck } from "utils/containerCheck";
 import { ErrorMapper } from "utils/ErrorMapper";
 import Scanner from "utils/scanner";
 import statisticsUtils from "utils/statistics";
@@ -33,25 +32,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
   }
   const containerList = statisticsUtils.containerList(mainRoom);
   const containerIdList = containerList.map(container => container.id);
-  if (!Memory.containerForSuperHarvest || !(Memory.containerForSuperHarvest instanceof Array)) {
-    Memory.containerForSuperHarvest = [];
-  }
-  containerIdList.forEach(containerId => {
-    let nearSourceId: Id<Source> | undefined;
-    const container = Game.getObjectById(containerId) as StructureContainer;
-    sourceList.forEach(source => {
-      if (source.pos.inRangeTo(container, 1)) {
-        nearSourceId = source.id;
-      }
-    });
-    if (Memory.containerForSuperHarvest && !Memory.containerForSuperHarvest.find(z => z.containerId === containerId)) {
-      Memory.containerForSuperHarvest.push({
-        containerId,
-        creepName: undefined,
-        sourceId: nearSourceId
-      });
-    }
-  });
+  // 每 tick 从房间实际 container 重建:旧条目自动淘汰,新 container 自动加入
+  Memory.containerForSuperHarvest = containerList.map(container => ({
+    containerId: container.id,
+    sourceId: sourceList.find(s => s.pos.inRangeTo(container, 1))?.id
+  }));
 
   // 需求驱动的建筑规划:扫描世界 → 把缺的 container/extension 工地放下去 → 汇入建造线
   planConstruction({ room: mainRoom, sources: sourceList, anchor: mainSpawn.pos });
@@ -63,15 +48,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
     creep.work();
   });
 
-  if (Memory.containerForSuperHarvest) {
-    Memory.containerForSuperHarvest.forEach(z => {
-      const { creepName } = z;
-      if (creepName && !Game.creeps[creepName]) {
-        z.creepName = undefined;
-      }
-    });
-    Memory.containerForSuperHarvest = Memory.containerForSuperHarvest.filter(z => containerCheck(z.containerId));
-  }
   if (Memory.creepConfigs) {
     Object.keys(Memory.creepConfigs).forEach(name => {
       if (!Game.creeps[name] && Memory.creepConfigs) {

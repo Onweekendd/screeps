@@ -4,23 +4,12 @@ type BUILDER_TYPE = "builder";
 type SUPER_HARVESTER_TYPE = "superHarvester";
 type REPAIRER_TYPE = "repairer";
 
-type WorkingFlow = (workArguments: any) => {
-  // 前置准备工作 如到岗
-  prepare?: (creep: Creep) => boolean;
-  // 正式工作
-  target: (creep: Creep) => boolean;
-  // 获取资源
-  source: (creep: Creep) => boolean;
-  // 空闲
-  free?: (creep: Creep) => boolean;
-};
-
 interface RoleType {
-  harvester: WorkingFlow;
-  updater: WorkingFlow;
-  builder: WorkingFlow;
-  superHarvester: WorkingFlow;
-  repairer: WorkingFlow;
+  harvester: unknown;
+  updater: unknown;
+  builder: unknown;
+  superHarvester: unknown;
+  repairer: unknown;
 }
 interface Memory {
   creepConfigs?: {
@@ -31,13 +20,12 @@ interface Memory {
   };
   containerForSuperHarvest?: {
     containerId: Id<StructureContainer>;
-    creepName?: string;
     sourceId?: Id<Source>;
   }[];
 }
 
 // 任务种类:对应任务工厂(src/Tasks)里登记的具体命令
-type TaskType = "harvest" | "withdraw" | "build" | "idle" | "mine";
+type TaskType = "harvest" | "withdraw" | "build" | "deliver" | "repair" | "upgrade" | "idle" | "mine";
 
 // 可序列化的任务描述符:存进 creep.memory,每 tick 由工厂重建成 Task 对象(架构文档 2.3)
 interface TaskDescriptor {
@@ -50,8 +38,6 @@ interface TaskDescriptor {
 
 interface CreepMemory {
   configName: string;
-  ready: boolean;
-  working: boolean;
   // 当前持有的任务描述符;命令模式的"可序列化部分"
   task?: TaskDescriptor;
 }
@@ -64,9 +50,6 @@ interface SpawnRequest {
   body: BodyPartConstant[];
   // 写入 creepConfigs 的角色参数(含目的地);即架构文档里所说的 "memory"
   args: Record<string, any>;
-  // 初始 CreepMemory 标志,默认均为 true
-  ready?: boolean;
-  working?: boolean;
   // creep 命名前缀,默认用 role
   namePrefix?: string;
 }
